@@ -70,7 +70,7 @@ def check_email_empty():
 
 # Authentifizierungs-Endpunkte
 
-@api.route('/registe', methods=['POST'])
+@api.route('/register', methods=['POST'])
 def register():
     """Benutzer registrieren"""
     log_api_request('/register', 'POST')

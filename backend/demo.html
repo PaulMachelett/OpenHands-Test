@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Backend API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .note-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .note-actions {
+            margin-top: 10px;
+        }
+        .note-actions button {
+            width: auto;
+            margin-right: 10px;
+            padding: 5px 10px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Flask Backend API Demo</h1>
+    
+    <!-- Login/Register Section -->
+    <div class="container">
+        <h2>Authentifizierung</h2>
+        
+        <div id="auth-section">
+            <div class="form-group">
+                <label for="email">E-Mail:</label>
+                <input type="email" id="email" placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" placeholder="admin123">
+            </div>
+            <button onclick="login()">Anmelden</button>
+            
+            <h3>Oder neuen Account erstellen:</h3>
+            <div class="form-group">
+                <label for="reg-name">Name:</label>
+                <input type="text" id="reg-name" placeholder="Ihr Name">
+            </div>
+            <div class="form-group">
+                <label for="reg-email">E-Mail:</label>
+                <input type="email" id="reg-email" placeholder="ihre@email.com">
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Passwort:</label>
+                <input type="password" id="reg-password" placeholder="Sicheres Passwort">
+            </div>
+            <button onclick="register()">Registrieren</button>
+        </div>
+        
+        <div id="logged-in-section" class="hidden">
+            <p>Angemeldet als: <span id="user-info"></span></p>
+            <button onclick="logout()">Abmelden</button>
+        </div>
+        
+        <div id="auth-response" class="response"></div>
+    </div>
+    
+    <!-- Notes Section -->
+    <div class="container" id="notes-section" class="hidden">
+        <h2>Notizen verwalten</h2>
+        
+        <div class="form-group">
+            <label for="note-title">Titel:</label>
+            <input type="text" id="note-title" placeholder="Notiz-Titel">
+        </div>
+        <div class="form-group">
+            <label for="note-content">Inhalt:</label>
+            <textarea id="note-content" rows="4" placeholder="Notiz-Inhalt"></textarea>
+        </div>
+        <button onclick="createNote()">Notiz erstellen</button>
+        <button onclick="loadNotes()">Notizen laden</button>
+        
+        <div id="notes-response" class="response"></div>
+        
+        <div id="notes-list"></div>
+    </div>
+    
+    <!-- Admin Section -->
+    <div class="container" id="admin-section" class="hidden">
+        <h2>Admin-Bereich</h2>
+        <button onclick="loadUsers()">Alle Benutzer laden</button>
+        <div id="admin-response" class="response"></div>
+        <div id="users-list"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:12000';
+        let sessionToken = null;
+        let currentUser = null;
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `response ${isError ? 'error' : 'success'}`;
+        }
+
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (sessionToken) {
+                options.headers['Authorization'] = sessionToken;
+            }
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                return { success: response.ok, data: result, status: response.status };
+            } catch (error) {
+                return { success: false, data: { error: error.message }, status: 0 };
+            }
+        }
+
+        async function register() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            const result = await apiCall('/register', 'POST', { name, email, password });
+            showResponse('auth-response', result.data, !result.success);
+
+            if (result.success) {
+                // Auto-login after registration
+                setTimeout(() => {
+                    document.getElementById('email').value = email;
+                    document.getElementById('password').value = password;
+                    login();
+                }, 1000);
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const result = await apiCall('/login', 'POST', { email, password });
+            showResponse('auth-response', result.data, !result.success);
+
+            if (result.success) {
+                sessionToken = result.data.session_token;
+                currentUser = result.data.user;
+                
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('logged-in-section').classList.remove('hidden');
+                document.getElementById('notes-section').classList.remove('hidden');
+                document.getElementById('user-info').textContent = `${currentUser.name} (${currentUser.email})`;
+                
+                if (currentUser.admin) {
+                    document.getElementById('admin-section').classList.remove('hidden');
+                }
+                
+                loadNotes();
+            }
+        }
+
+        async function logout() {
+            await apiCall('/logout', 'POST');
+            
+            sessionToken = null;
+            currentUser = null;
+            
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('logged-in-section').classList.add('hidden');
+            document.getElementById('notes-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.add('hidden');
+            
+            // Clear forms
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('auth-response').textContent = '';
+        }
+
+        async function createNote() {
+            const title = document.getElementById('note-title').value;
+            const content = document.getElementById('note-content').value;
+
+            if (!title || !content) {
+                showResponse('notes-response', { error: 'Titel und Inhalt sind erforderlich' }, true);
+                return;
+            }
+
+            const result = await apiCall('/notes', 'POST', { title, content });
+            showResponse('notes-response', result.data, !result.success);
+
+            if (result.success) {
+                document.getElementById('note-title').value = '';
+                document.getElementById('note-content').value = '';
+                loadNotes();
+            }
+        }
+
+        async function loadNotes() {
+            const result = await apiCall('/notes');
+            showResponse('notes-response', result.data, !result.success);
+
+            if (result.success) {
+                displayNotes(result.data.notes);
+            }
+        }
+
+        function displayNotes(notes) {
+            const container = document.getElementById('notes-list');
+            container.innerHTML = '';
+
+            notes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note-item';
+                noteDiv.innerHTML = `
+                    <h4>${note.title}</h4>
+                    <p>${note.content}</p>
+                    <div class="note-actions">
+                        <button onclick="editNote(${note.id}, '${note.title}', '${note.content}')">Bearbeiten</button>
+                        <button onclick="deleteNote(${note.id})">Löschen</button>
+                    </div>
+                `;
+                container.appendChild(noteDiv);
+            });
+        }
+
+        async function editNote(id, currentTitle, currentContent) {
+            const newTitle = prompt('Neuer Titel:', currentTitle);
+            const newContent = prompt('Neuer Inhalt:', currentContent);
+
+            if (newTitle && newContent) {
+                const result = await apiCall(`/notes/${id}`, 'PUT', { 
+                    title: newTitle, 
+                    content: newContent 
+                });
+                showResponse('notes-response', result.data, !result.success);
+                
+                if (result.success) {
+                    loadNotes();
+                }
+            }
+        }
+
+        async function deleteNote(id) {
+            if (confirm('Notiz wirklich löschen?')) {
+                const result = await apiCall(`/notes/${id}`, 'DELETE');
+                showResponse('notes-response', result.data, !result.success);
+                
+                if (result.success) {
+                    loadNotes();
+                }
+            }
+        }
+
+        async function loadUsers() {
+            const result = await apiCall('/admin/users');
+            showResponse('admin-response', result.data, !result.success);
+
+            if (result.success) {
+                displayUsers(result.data.users);
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('users-list');
+            container.innerHTML = '';
+
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'note-item';
+                userDiv.innerHTML = `
+                    <h4>${user.name} (${user.email})</h4>
+                    <p>Admin: ${user.admin ? 'Ja' : 'Nein'}</p>
+                    ${user.id !== currentUser.id ? 
+                        `<button onclick="deleteUser(${user.id}, '${user.name}')">Benutzer löschen</button>` : 
+                        '<p><em>Sie können sich nicht selbst löschen</em></p>'
+                    }
+                `;
+                container.appendChild(userDiv);
+            });
+        }
+
+        async function deleteUser(id, name) {
+            if (confirm(`Benutzer "${name}" wirklich löschen?`)) {
+                const result = await apiCall(`/admin/users/${id}`, 'DELETE');
+                showResponse('admin-response', result.data, !result.success);
+                
+                if (result.success) {
+                    loadUsers();
+                }
+            }
+        }
+
+        // Initialize with demo credentials
+        document.getElementById('email').value = 'admin@example.com';
+        document.getElementById('password').value = 'admin123';
+    </script>
+</body>
+</html>

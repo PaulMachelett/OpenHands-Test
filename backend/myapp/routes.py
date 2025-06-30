@@ -31,6 +31,7 @@ def home():
             'POST /register': 'Benutzer registrieren',
             'POST /login': 'Benutzer anmelden',
             'POST /logout': 'Benutzer abmelden',
+            'GET /check-email/<email>': 'E-Mail-Existenz prüfen (true/false)',
             'GET /notes': 'Alle Notizen des Benutzers abrufen',
             'POST /notes': 'Neue Notiz erstellen',
             'GET /notes/<id>': 'Spezifische Notiz abrufen',
@@ -46,6 +47,26 @@ def home():
 def demo():
     """Demo-Seite servieren"""
     return render_template('demo.html')
+
+@api.route('/check-email/<path:email>', methods=['GET'])
+def check_email_exists(email):
+    """Überprüft, ob eine E-Mail-Adresse bereits existiert"""
+    log_api_request(f'/check-email/{email}', 'GET')
+    
+    # E-Mail-Validierung
+    email = clean_string(email) if email else ""
+    if not email or not validate_email(email):
+        return jsonify(False)
+    
+    # Prüfen ob E-Mail bereits existiert
+    user_exists = db_service.get_user_by_email(email) is not None
+    return jsonify(user_exists)
+
+@api.route('/check-email/', methods=['GET'])
+def check_email_empty():
+    """Behandle leere E-Mail-Anfragen"""
+    log_api_request('/check-email/', 'GET')
+    return jsonify(False)
 
 # Authentifizierungs-Endpunkte
 

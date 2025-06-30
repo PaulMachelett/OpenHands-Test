@@ -109,10 +109,16 @@ class MockQuery:
             if isinstance(filter_item, tuple) and filter_item[0] == 'filter_by':
                 kwargs = filter_item[1]
                 data = [item for item in data if all(
-                    getattr(item, key, None) == value for key, value in kwargs.items()
+                    self._compare_values(getattr(item, key, None), value, key) for key, value in kwargs.items()
                 )]
         
         return data
+    
+    def _compare_values(self, item_value, filter_value, key):
+        """Vergleiche Werte, E-Mail case-insensitive"""
+        if key == 'email' and isinstance(item_value, str) and isinstance(filter_value, str):
+            return item_value.lower() == filter_value.lower()
+        return item_value == filter_value
 
 class MockDatabase:
     """Mock-Datenbank die SQLite-Verhalten simuliert"""

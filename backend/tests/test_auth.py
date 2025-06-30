@@ -9,15 +9,21 @@ import pytest
 class TestRegistration:
     """Tests für Benutzerregistrierung"""
     
-    def test_successful_registration(self, client, sample_user_data):
+    def test_successful_registration(self, client):
         """Test erfolgreiche Registrierung"""
-        response = client.post('/register', json=sample_user_data)
+        # Verwende eindeutige Daten für jeden Test
+        unique_user_data = {
+            'name': 'newuser',
+            'email': 'newuser@example.com',
+            'password': 'newpassword123'
+        }
+        response = client.post('/register', json=unique_user_data)
         
         assert response.status_code in [200, 201]
         data = response.get_json()
         assert data['message'] == 'Benutzer erfolgreich registriert'
-        assert data['user']['name'] == sample_user_data['name']
-        assert data['user']['email'] == sample_user_data['email']
+        assert data['user']['name'] == unique_user_data['name']
+        assert data['user']['email'] == unique_user_data['email']
         assert 'password' not in data['user']  # Passwort sollte nicht zurückgegeben werden
     
     def test_registration_missing_fields(self, client):

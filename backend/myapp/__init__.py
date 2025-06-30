@@ -31,7 +31,10 @@ def create_app(config=None):
     Returns:
         Flask: Konfigurierte Flask-Anwendung
     """
-    app = Flask(__name__)
+    import os
+    # Template-Ordner korrekt setzen
+    template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates')
+    app = Flask(__name__, template_folder=template_dir)
     
     # Standard-Konfiguration
     app.config.update({

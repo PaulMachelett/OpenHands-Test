@@ -94,28 +94,31 @@ def authenticated_user(client, sample_user_data):
 
 
 @pytest.fixture
-def authenticated_admin(client, sample_admin_data, mock_db):
-    """Registriere und authentifiziere einen Admin"""
-    # Registriere Admin
-    register_response = client.post('/register', json=sample_admin_data)
-    
-    # Setze Admin-Status in der Mock-Database
-    user = mock_db.get_user_by_email(sample_admin_data['email'])
-    if user:
-        user.admin = True
+def authenticated_admin(client, mock_db):
+    """Verwende den vorhandenen Admin-Benutzer"""
+    # Verwende den bereits existierenden Admin aus der Mock-Database
+    admin_data = {
+        'email': 'admin@example.com',
+        'password': 'admin123'
+    }
     
     # Melde Admin an
-    login_response = client.post('/login', json={
-        'email': sample_admin_data['email'],
-        'password': sample_admin_data['password']
-    })
+    login_response = client.post('/login', json=admin_data)
     
     login_data = login_response.get_json()
     if login_response.status_code == 200 and 'session_token' in login_data:
         return login_data
     else:
-        # Fallback für Tests
-        return {
-            'session_token': 'test-admin-token',
-            'user': {'id': user.id if user else 1, 'email': sample_admin_data['email'], 'admin': True}
-        }
+        # Fallback für Tests - erstelle Admin-Token manuell
+        admin_user = mock_db.get_user_by_email('admin@example.com')
+        if admin_user:
+            return {
+                'session_token': f'admin-token-{admin_user.id}',
+                'user': {'id': admin_user.id, 'email': admin_user.email, 'admin': True}
+            }
+        else:
+            # Letzter Fallback
+            return {
+                'session_token': 'test-admin-token',
+                'user': {'id': 1, 'email': 'admin@example.com', 'admin': True}
+            }

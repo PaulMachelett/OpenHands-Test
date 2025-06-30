@@ -87,12 +87,12 @@ class TestLogin:
         # Registriere Benutzer zuerst
         client.post('/register', json=sample_user_data)
         
-        # Melde Benutzer an
+        # Connexion utilisateur avec la nouvelle route /userlogin
         login_data = {
             'email': sample_user_data['email'],
             'password': sample_user_data['password']
         }
-        response = client.post('/login', json=login_data)
+        response = client.post('/userlogin', json=login_data)
         
         assert response.status_code == 200
         data = response.get_json()
@@ -106,7 +106,7 @@ class TestLogin:
             'email': 'nonexistent@example.com',
             'password': 'password123'
         }
-        response = client.post('/login', json=login_data)
+        response = client.post('/userlogin', json=login_data)
         
         assert response.status_code == 401
         data = response.get_json()
@@ -122,7 +122,7 @@ class TestLogin:
             'email': sample_user_data['email'],
             'password': 'wrongpassword'
         }
-        response = client.post('/login', json=login_data)
+        response = client.post('/userlogin', json=login_data)
         
         assert response.status_code == 401
         data = response.get_json()
@@ -131,7 +131,7 @@ class TestLogin:
     def test_login_missing_fields(self, client):
         """Test Anmeldung mit fehlenden Feldern"""
         incomplete_data = {'email': 'test@example.com'}
-        response = client.post('/login', json=incomplete_data)
+        response = client.post('/userlogin', json=incomplete_data)
         
         assert response.status_code == 400
         data = response.get_json()

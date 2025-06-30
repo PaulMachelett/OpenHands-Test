@@ -21,8 +21,8 @@ class User(db.Model):
     admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Relationship zu Notes
-    notes = relationship('Note', backref='owner', lazy=True, cascade='all, delete-orphan')
+    # Relation vers les Notes - mise à jour pour utiliser user_id
+    notes = relationship('Note', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def __init__(self, name, email, password, admin=False):
         self.name = name
@@ -55,28 +55,28 @@ class User(db.Model):
         return f'<User {self.name}>'
 
 class Note(db.Model):
-    """Note-Modell für die Datenbank"""
+    """Modèle Note pour la base de données"""
     __tablename__ = 'notes'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
-    owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Changé de owner_id à user_id
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def __init__(self, title, content, owner_id):
+    def __init__(self, title, content, user_id):  # Paramètre changé de owner_id à user_id
         self.title = title
         self.content = content
-        self.owner_id = owner_id
+        self.user_id = user_id  # Assignation changée de owner_id à user_id
     
     def to_dict(self):
-        """Note-Objekt zu Dictionary konvertieren"""
+        """Convertir l'objet Note en dictionnaire"""
         return {
             'id': self.id,
             'title': self.title,
             'content': self.content,
-            'owner_id': self.owner_id,
+            'user_id': self.user_id,  # Changé de owner_id à user_id
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

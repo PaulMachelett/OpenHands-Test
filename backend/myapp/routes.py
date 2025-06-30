@@ -29,7 +29,7 @@ def home():
         'stats': stats,
         'endpoints': {
             'POST /register': 'Benutzer registrieren',
-            'POST /login': 'Benutzer anmelden',
+            'POST /userlogin': 'Benutzer anmelden (route modifiée)',  # Route mise à jour
             'POST /logout': 'Benutzer abmelden',
             'GET /check-email/<email>': 'E-Mail-Existenz prüfen (true/false)',
             'GET /notes': 'Alle Notizen des Benutzers abrufen',
@@ -116,10 +116,10 @@ def register():
     except Exception as e:
         return error_response(f'Fehler beim Registrieren: {str(e)}', 500)
 
-@api.route('/login', methods=['POST'])
+@api.route('/userlogin', methods=['POST'])
 def login():
-    """Benutzer anmelden"""
-    log_api_request('/login', 'POST')
+    """Connexion utilisateur - route changée de /login à /userlogin"""
+    log_api_request('/userlogin', 'POST')
     data = request.get_json()
     
     if not data or not all(k in data for k in ('email', 'password')):
@@ -194,7 +194,8 @@ def create_note(user_id):
         return error_response(error_msg)
     
     try:
-        note = db_service.create_note(title=title, content=content, owner_id=user_id)
+        # Création de note avec user_id au lieu de owner_id
+        note = db_service.create_note(title=title, content=content, user_id=user_id)
         
         return success_response(
             'Notiz erfolgreich erstellt',

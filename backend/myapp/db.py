@@ -42,8 +42,8 @@ class MockSession:
         for obj in self._deleted_objects:
             if isinstance(obj, User):
                 self.mock_db.users = [u for u in self.mock_db.users if u.id != obj.id]
-                # Cascade delete: Alle Notizen des Users löschen
-                self.mock_db.notes = [n for n in self.mock_db.notes if n.owner_id != obj.id]
+                # Suppression en cascade : supprimer toutes les notes de l'utilisateur
+                self.mock_db.notes = [n for n in self.mock_db.notes if n.user_id != obj.id]
             elif isinstance(obj, Note):
                 self.mock_db.notes = [n for n in self.mock_db.notes if n.id != obj.id]
         
@@ -182,20 +182,20 @@ class MockDatabase:
         user.created_at = datetime.utcnow()
         self.users.append(user)
         
-        # Dummy-Notizen
-        note1 = Note(title="Admin Notiz", content="Das ist eine Admin-Notiz.", owner_id=admin.id)
+        # Notes de démonstration - utilisation de user_id au lieu de owner_id
+        note1 = Note(title="Admin Notiz", content="Das ist eine Admin-Notiz.", user_id=admin.id)
         note1.id = self._get_next_note_id()
         note1.created_at = datetime.utcnow()
         note1.updated_at = datetime.utcnow()
         self.notes.append(note1)
         
-        note2 = Note(title="Erste Notiz", content="Das ist meine erste Notiz im System.", owner_id=user.id)
+        note2 = Note(title="Erste Notiz", content="Das ist meine erste Notiz im System.", user_id=user.id)
         note2.id = self._get_next_note_id()
         note2.created_at = datetime.utcnow()
         note2.updated_at = datetime.utcnow()
         self.notes.append(note2)
         
-        note3 = Note(title="Einkaufsliste", content="Milch, Brot, Eier, Käse", owner_id=user.id)
+        note3 = Note(title="Einkaufsliste", content="Milch, Brot, Eier, Käse", user_id=user.id)
         note3.id = self._get_next_note_id()
         note3.created_at = datetime.utcnow()
         note3.updated_at = datetime.utcnow()

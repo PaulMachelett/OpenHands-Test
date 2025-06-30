@@ -27,7 +27,7 @@ class TestAPIBase:
         endpoints = data['endpoints']
         expected_endpoints = [
             'POST /register',
-            'POST /login',
+            'POST /userlogin',
             'POST /logout',
             'GET /notes',
             'POST /notes',
@@ -116,7 +116,7 @@ class TestAPIPerformance:
         client.post('/register', json=sample_user_data)
         
         # Melde Benutzer an
-        login_response = client.post('/login', json={
+        login_response = client.post('/userlogin', json={
             'email': sample_user_data['email'],
             'password': sample_user_data['password']
         })

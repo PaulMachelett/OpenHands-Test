@@ -20,7 +20,8 @@ class TestNotesCreation:
         assert data['note']['title'] == sample_note_data['title']
         assert data['note']['content'] == sample_note_data['content']
         assert 'id' in data['note']
-        assert data['note']['owner_id'] == authenticated_user['user']['id']
+        # Vérification que la note appartient à l'utilisateur - utilise user_id
+        assert data['note']['user_id'] == authenticated_user['user']['id']
     
     def test_create_note_without_auth(self, client, sample_note_data):
         """Test Notiz-Erstellung ohne Authentifizierung"""
@@ -120,7 +121,7 @@ class TestNotesRetrieval:
         """Test Abruf einer Notiz eines anderen Benutzers"""
         # Erstelle ersten Benutzer und Notiz
         client.post('/register', json=sample_user_data)
-        login_response1 = client.post('/login', json={
+        login_response1 = client.post('/userlogin', json={
             'email': sample_user_data['email'],
             'password': sample_user_data['password']
         })
@@ -137,7 +138,7 @@ class TestNotesRetrieval:
             'password': 'password123'
         }
         client.post('/register', json=user2_data)
-        login_response2 = client.post('/login', json={
+        login_response2 = client.post('/userlogin', json={
             'email': user2_data['email'],
             'password': user2_data['password']
         })

@@ -20,8 +20,8 @@ def main():
         'SECRET_KEY': 'dev-secret-key'
     })
     
-    # Server starten
-    app.run(host='0.0.0.0', port=12001, debug=True)
+    # Serveur démarré sur le port 12002 - modification pour éviter les conflits
+    app.run(host='0.0.0.0', port=12002, debug=True)
 
 if __name__ == '__main__':
     main()

@@ -85,7 +85,7 @@ def authenticated_user(client, sample_user_data):
     client.post('/register', json=sample_user_data)
     
     # Melde Benutzer an
-    response = client.post('/login', json={
+    response = client.post('/userlogin', json={
         'email': sample_user_data['email'],
         'password': sample_user_data['password']
     })
@@ -103,7 +103,7 @@ def authenticated_admin(client, mock_db):
     }
     
     # Melde Admin an
-    login_response = client.post('/login', json=admin_data)
+    login_response = client.post('/userlogin', json=admin_data)
     
     login_data = login_response.get_json()
     if login_response.status_code == 200 and 'session_token' in login_data:

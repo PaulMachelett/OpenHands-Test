@@ -18,8 +18,22 @@ backend/
 │   └── utils.py               # 🛠️ Hilfsfunktionen und Utilities
 ├── requirements.txt           # 📋 Python-Dependencies
 ├── test_modular_api.py        # 🧪 Test-Suite für modulare Struktur
-└── demo.html                  # 🌐 Demo-Frontend
+├── demo.html                  # 🌐 Demo-Frontend
+├── MODULAR_STRUCTURE.md       # 📚 Modulare Architektur-Dokumentation
+├── README.md                  # 📖 Projekt-Dokumentation
+└── SQLALCHEMY_IMPLEMENTATION.md # 📋 SQLAlchemy-Implementierung
 ```
+
+## 🧹 **Code-Duplikate entfernt**
+
+Alle veralteten und duplizierten Dateien wurden entfernt:
+- ❌ `app.py` (ersetzt durch `main.py`)
+- ❌ `app_sqlalchemy.py` (ersetzt durch modulare Struktur)
+- ❌ `models.py` (ersetzt durch `myapp/models.py`)
+- ❌ `database_service.py` (ersetzt durch `myapp/crud.py`)
+- ❌ `mock_database.py` (ersetzt durch `myapp/db.py`)
+- ❌ `test_api.py` und `test_sqlalchemy_api.py` (ersetzt durch `test_modular_api.py`)
+- ❌ Cache-Verzeichnisse und Log-Dateien
 
 ## 📁 Modul-Beschreibungen
 

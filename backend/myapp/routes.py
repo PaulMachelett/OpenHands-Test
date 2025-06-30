@@ -184,7 +184,7 @@ def create_note(user_id):
     except Exception as e:
         return error_response(f'Fehler beim Erstellen der Notiz: {str(e)}', 500)
 
-@api.route('/notes/<int:note_id>', methods=['GET'])
+@api.route('/notes/<int:note_i>', methods=['GET'])
 @require_auth
 def get_note(user_id, note_id):
     """Spezifische Notiz abrufen"""

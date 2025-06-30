@@ -3,7 +3,7 @@ API-Routen für das Flask-Backend
 Alle REST-Endpunkte für User- und Note-Management
 """
 
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify, send_from_directory, render_template
 from .crud import db_service
 from .utils import (
     require_auth, require_admin, create_session, get_user_from_session,
@@ -45,7 +45,7 @@ def home():
 @api.route('/demo.html')
 def demo():
     """Demo-Seite servieren"""
-    return send_from_directory('.', 'demo.html')
+    return render_template('demo.html')
 
 # Authentifizierungs-Endpunkte
 

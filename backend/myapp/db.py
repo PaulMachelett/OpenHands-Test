@@ -140,6 +140,28 @@ class MockDatabase:
         """Neue Session erstellen"""
         return MockSession(self)
     
+    def reset_database(self):
+        """Datenbank zurücksetzen für Tests"""
+        self.users.clear()
+        self.notes.clear()
+        self._user_id_counter = 1
+        self._note_id_counter = 1
+        self._initialize_dummy_data()
+    
+    def get_user_by_email(self, email):
+        """Benutzer nach E-Mail suchen"""
+        for user in self.users:
+            if user.email == email:
+                return user
+        return None
+    
+    def get_user_by_id(self, user_id):
+        """Benutzer nach ID suchen"""
+        for user in self.users:
+            if user.id == user_id:
+                return user
+        return None
+    
     def _initialize_dummy_data(self):
         """Dummy-Daten initialisieren"""
         # Admin-Benutzer
